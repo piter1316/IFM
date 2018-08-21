@@ -1,5 +1,3 @@
-from typing import List, Any
-
 import pymysql
 
 
@@ -16,22 +14,22 @@ def connect_to_database(url, user, password, data_base_name):
 database = connect_to_database('b2b.int-technics.pl', 'b2b_roboczy', 'b2b_roboczy', 'b2b_robocza')
 
 
-sql = 'select DISTINCT DrzewoKatalogu, DrzewoKatalogu_DE from IFM_Scrap'
+sql = 'select DISTINCT DrzewoKatalogu, DrzewoKatalogu_ES from IFM_Scrap'
 cursor.execute(sql)
 result = cursor.fetchall()
 for item in result:
     try:
         str_pl = item[0].split("/")
-        str_de = item[1].split("##")
+        str_es = item[1].split("##")
     except AttributeError:
         print('err')
 
     try:
         for i in range(len(str_pl)):
-            print(str_pl[i], str_de[i])
+            print(str_pl[i], str_es[i])
             cursor.execute(
-                'UPDATE IFM_katalog set nazwa_DE = "{}" WHERE nazwa = "{}"'
-                    .format(str_de[i], str_pl[i]))
+                'UPDATE IFM_katalog set nazwa_ES = "{}" WHERE nazwa = "{}"'
+                .format(str_es[i], str_pl[i]))
             database.commit()
     except IndexError:
         print("index ERR")

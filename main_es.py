@@ -17,27 +17,23 @@ def connect_to_database(url, user, password, data_base_name):
 database = connect_to_database('b2b.int-technics.pl', 'b2b_roboczy', 'b2b_roboczy', 'b2b_robocza')
 
 base_url = 'https://www.ifm.com'
-# for i in range(10):
+# for i in range(30):
 
 for i in range(len(kody.kody)):
 
-    r = requests.get('https://www.ifm.com/de/de/product/{}'.format(kody.kody[i]))
+    r = requests.get('https://www.ifm.com/es/es/product/{}'.format(kody.kody[i]))
     soup = BeautifulSoup(r.text, 'html.parser')
     try:
         kodTowaru = soup.find('h1')
-        # print("KOD TOWARU")
         kod = kodTowaru.text
         print('KodTowaru: ', kod)
 
         nazwa = soup.find('h2', {'class': 'item-class'})
         nazwa = nazwa.text
 
-        print('Nazwa_DE: ', nazwa)
+        print('Nazwa_ES: ', nazwa)
 
         tree = soup.find('ol', {'class': 'bc'})
-
-        # print(tree.text)
-
         list_var = tree.text.split('\n')
         drzewo = list_var[2:-2]
         drzewo = str(drzewo)
@@ -52,7 +48,7 @@ for i in range(len(kody.kody)):
 
             for j in range(len(pdf_url)):
                 link_pdf = str(pdf_url[j])
-                if link_pdf.find('Datenblatt') > 0:
+                if link_pdf.find('Ficha técnica') > 0:
                     link_pdf = pdf_url[j]
                     katalog = base_url + link_pdf['href']
                     print("Katalog_pdf: ", katalog)
@@ -64,9 +60,9 @@ for i in range(len(kody.kody)):
 
 
         sql = 'UPDATE IFM_Scrap ' \
-                  'set Nazwa_DE = "{}",' \
-                  'DrzewoKatalogu_DE = "{}",' \
-                  'Katalog_DE = "{}"' \
+                  'set Nazwa_ES = "{}",' \
+                  'DrzewoKatalogu_ES = "{}",' \
+                  'Katalog_ES = "{}"' \
                   'WHERE kodTowaru = "{}"'.format(nazwa, drzewo, katalog, kod)
         cursor.execute(sql)
 

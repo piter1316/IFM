@@ -17,11 +17,11 @@ def connect_to_database(url, user, password, data_base_name):
 database = connect_to_database('b2b.int-technics.pl', 'b2b_roboczy', 'b2b_roboczy', 'b2b_robocza')
 
 base_url = 'https://www.ifm.com'
-# for i in range(28,35):
+# for i in range(10):
 
 for i in range(len(kody.kody)):
 
-    r = requests.get('https://www.ifm.com/gb/en/product/{}'.format(kody.kody[i]))
+    r = requests.get('https://www.ifm.com/de/de/product/{}'.format(kody.kody[i]))
     soup = BeautifulSoup(r.text, 'html.parser')
     try:
         kodTowaru = soup.find('h1')
@@ -32,7 +32,7 @@ for i in range(len(kody.kody)):
         nazwa = soup.find('h2', {'class': 'item-class'})
         nazwa = nazwa.text
 
-        print('Nazwa_EN: ', nazwa)
+        print('Nazwa_DE: ', nazwa)
 
         tree = soup.find('ol', {'class': 'bc'})
 
@@ -45,14 +45,14 @@ for i in range(len(kody.kody)):
         drzewo = drzewo.replace('[', '')
         drzewo = drzewo.replace(']', '')
         drzewo = drzewo.replace("'", '')
-        print("DRZEWO KATALOGU; ", drzewo )
+        print("DRZEWO KATALOGU; ", drzewo)
 
         try:
             pdf_url = soup.find_all('a', {'class': 'button--tertiary'}, 'span')
 
             for j in range(len(pdf_url)):
                 link_pdf = str(pdf_url[j])
-                if link_pdf.find('data sheet') > 0:
+                if link_pdf.find('Datenblatt') > 0:
                     link_pdf = pdf_url[j]
                     katalog = base_url + link_pdf['href']
                     print("Katalog_pdf: ", katalog)
@@ -62,27 +62,15 @@ for i in range(len(kody.kody)):
             katalog = "BRAK"
             print(kod + ' Brak KATALOGU')
 
-        try:
-            pic = soup.find_all('source')
-            link_pic = pic[1]['srcset']
-            zdjecie = base_url + link_pic
-            print("LINK DO ZDJĘCIA: ", zdjecie)
-
-        except IndexError:
-            zdjecie = "BRAK"
-            print(kod + " brak zdjecia")
-
         sql = 'UPDATE IFM_Scrap ' \
-                  'set Nazwa_EN = "{}",' \
-                  'DrzewoKatalogu_EN = "{}",' \
-                  'Katalog_EN = "{}"' \
-                  'WHERE kodTowaru = "{}"'.format(nazwa, drzewo, katalog, kod)
+              'set Nazwa_DE = "{}",' \
+              'DrzewoKatalogu_DE = "{}",' \
+              'Katalog_DE = "{}"' \
+              'WHERE kodTowaru = "{}"'\
+              .format(nazwa, drzewo, katalog, kod)
         cursor.execute(sql)
-
-        print(i)
         database.commit()
+        print(i)
 
     except Exception:
         print(kod, " Nieobsłużony błąd")
-
-

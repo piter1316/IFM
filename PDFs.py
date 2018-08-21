@@ -17,27 +17,20 @@ def connect_to_database(url, user, password, data_base_name):
 
 database = connect_to_database('b2b.int-technics.pl', 'b2b_roboczy', 'b2b_roboczy', 'b2b_robocza')
 
-sql = 'SELECT Zdjecie, kodTowaru from IFM_Scrap'
+sql = 'SELECT Katalog_EN, kodTowaru from IFM_Scrap'
 cursor.execute(sql)
 result = cursor.fetchall()
 
-for i in range(len(result)):
-    url = result[i][0]
+# for i in range(1):
+for i in range(1909,len(result)):
+
+    pdf = result[i][0]
     name = result[i][1]
     try:
-        r = requests.get(url, allow_redirects=True)
-        open('img/{}.jpg'.format(name), 'wb').write(r.content)
-    except requests.exceptions.MissingSchema:
-        print('Brak Zdjęcia')
-    try:
-        baseheight = 650
-        img = Image.open('img/{}.jpg'.format(name))
-        hpercent = (baseheight / float(img.size[1]))
-        wsize = int((float(img.size[0]) * float(hpercent)))
-        img = img.resize((wsize, baseheight), PIL.Image.ANTIALIAS)
-        img.save('img/IFM - {}.jpg'.format(name))
-        os.remove('img/{}.jpg'.format(name), dir_fd=None)
+        r = requests.get(pdf, allow_redirects=True)
+        open('pdf/IFM - {}.pdf'.format(name), 'wb').write(r.content)
         print(i, name)
-    except OSError:
-        print("plik inny niż JPEG")
+    except requests.exceptions.MissingSchema:
+        print('Brak Katalogu PDF')
+
 

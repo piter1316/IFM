@@ -17,41 +17,45 @@ def connect_to_database(url, user, password, data_base_name):
 database = connect_to_database('b2b.int-technics.pl', 'b2b_roboczy', 'b2b_roboczy', 'b2b_robocza')
 
 base_url = 'https://www.ifm.com'
-# for i in range(6195, len(kody.kody)):
+# for i in range(28,35):
 
 for i in range(len(kody.kody)):
 
-    r = requests.get('https://www.ifm.com/pl/pl/product/{}'.format(kody.kody[i]))
+    r = requests.get('https://www.ifm.com/gb/en/product/{}'.format(kody.kody[i]))
     soup = BeautifulSoup(r.text, 'html.parser')
     try:
         kodTowaru = soup.find('h1')
         # print("KOD TOWARU")
         kod = kodTowaru.text
-        # print(kod)
+        print('KodTowaru: ', kod)
 
         nazwa = soup.find('h2', {'class': 'item-class'})
         nazwa = nazwa.text
 
+        print('Nazwa_EN: ', nazwa)
+
         tree = soup.find('ol', {'class': 'bc'})
-        # print("DRZEWO KATALOGU")
+
         # print(tree.text)
 
         list_var = tree.text.split('\n')
         drzewo = list_var[2:-2]
         drzewo = str(drzewo)
-        drzewo = drzewo.replace(', ', '/')
+        drzewo = drzewo.replace(', ', '##')
         drzewo = drzewo.replace('[', '')
         drzewo = drzewo.replace(']', '')
         drzewo = drzewo.replace("'", '')
+        print("DRZEWO KATALOGU; ", drzewo )
 
         try:
             pdf_url = soup.find_all('a', {'class': 'button--tertiary'}, 'span')
 
             for j in range(len(pdf_url)):
                 link_pdf = str(pdf_url[j])
-                if link_pdf.find('Karta') > 0:
+                if link_pdf.find('data sheet') > 0:
                     link_pdf = pdf_url[j]
                     katalog = base_url + link_pdf['href']
+                    print("Katalog_pdf: ", katalog)
                     break
 
         except IndexError:
@@ -62,18 +66,23 @@ for i in range(len(kody.kody)):
             pic = soup.find_all('source')
             link_pic = pic[1]['srcset']
             zdjecie = base_url + link_pic
-            # print("LINK DO ZDJĘCIA")
-            # print(zdjecie)
+            print("LINK DO ZDJĘCIA: ", zdjecie)
+
         except IndexError:
             zdjecie = "BRAK"
             print(kod + " brak zdjecia")
 
-        sql = 'Insert into IFM_Scrap_copy1(kodTowaru, Nazwa, DrzewoKatalogu, Katalog, Zdjecie)' \
-              + 'VALUES ("{}","{}","{}","{}","{}")'.format(kod, nazwa, drzewo, katalog, zdjecie)
+        sql = 'UPDATE IFM_Scrap ' \
+                  'set Nazwa_EN = "{}",' \
+                  'DrzewoKatalogu_EN = "{}",' \
+                  'Katalog_EN = "{}"' \
+                  'WHERE kodTowaru = "{}"'.format(nazwa, drzewo, katalog, kod)
         cursor.execute(sql)
 
         print(i)
         database.commit()
 
-    except pymysql.err.DatabaseError:
-        print(kod + ' nieobsłużony błąd')
+    except Exception:
+        print(kod, " Nieobsłużony błąd")
+
+
